@@ -1,6 +1,6 @@
 import ctypes
 
-rust_lib_name = "C:\\Users\\Administrator\\Desktop\\práce\\DroneProject\\code_examples\\rust_extension_for_py_example\\target\\release\\rust_lib.dll"
+rust_lib_name = "..\\target\\release\\rust_lib.dll"
 rust = ctypes.CDLL(rust_lib_name)
 
 
