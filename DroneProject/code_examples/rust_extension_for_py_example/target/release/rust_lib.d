@@ -1,0 +1,1 @@
+C:\Users\Administrator\Desktop\práce\DroneProject\code_examples\rust_extension_for_py_example\target\release\rust_lib.dll: C:\Users\Administrator\Desktop\práce\DroneProject\code_examples\rust_extension_for_py_example\src\lib.rs
