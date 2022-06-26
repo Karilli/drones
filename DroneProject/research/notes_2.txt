@@ -1,0 +1,60 @@
+draft mark segmentation alternative:
+-otsu's binarization method
+	- would be effective for images with only draft marks and hull, but shadows also negatively affect the results
+	- convert image to binary image, set a greyvalue treshold and split the image into two parts
+	- probably a bad option for us, but it would be much faster
+
+waterline estimation alternative:
+-frame differencing technique
+	-leverages that the water surface changes
+	-but it gives higher readings (because of water splash, boat movement, ... I guess)
+	-but the water doesn't always move
+	-uses binarization and sums differences bigger than some threshold (theta) between takes 
+
+paper approach:
+-params: p, T_1, T_2, T_3, two params for canny
+1.draft mark detection
+	-top-hat morphological transform
+		-parameter p, must to be "larger than 1cm (in pixels)", depends on drone relative position to boat, p=pic_height/(2*number_of_visible_marks-1)
+		-complexity of naive approach: 2*n*(pi*p**2) + n -> SD resolution: about 1 bilion iterations
+		-better approach (a lot faster): https://link.springer.com/chapter/10.1007/978-3-030-75549-2_6
+	-local tresholding
+		-otsu's binarization method -> find bounding boxes for found segments
+	-remove noise segments
+		-for each bounding box compute it's area (s) and width to height ration (w/h)
+		-assert that T_1 <= w/h <= T_2 and T_3 <= s; T_1 = 0.1, T_2 = 1, T_3 = 10
+2.draft mark recongnition
+	-distinguish mark string vs single mark
+		-vertical distances from centres of marks in string is less than the quarter of their mean height
+		-horizontal distances from centres of marks in string is less than twice as long as their mean height
+		-heights ratio of marks in string must be in [0.9, 1.1]
+	-recognize each mark as number or letter M
+		-compute sum of square differences of found marks with templates
+		-we don't have to do it for every found mark
+	-assert
+		-ratio of draft marks above each other is in [0.8, 1.2]
+		-vertical distance between the centers of draft marks above each other is in [1.5, 2.5]x(height of the above mark)
+		-results of template matching satisfy the positional relation of draft marks (M/0 -> 8 -> 6 -> 4 -> 2 -> M/0)
+		-number of found marks corresponds to parameter p (or is bigger)
+		-every mark matches some mask with error less than E, don't know how what number it should be
+3.waterline extraction
+	-canny edge detection (high sensitivity and signal-to-noise ratio)
+	-remove stationary edges from the resulting image
+	-use LMedS method to fit straight line to set of waterline pixels in search region
+	-assert distance of waterline from center of the lowest mark is less 2.5x(height of the above mark) and waterline is below center of the mark
+4.draft calculation
+	-compute draft for each frame
+	-apply median filter to get rid of outliers and mistakes
+	-find local mins and maxes and compute it's mean (a bit closer to human reading) OR just compute mean
+-results on two videos
+	-resolution: 640x360, fps: 30, length: 60s
+	-total processing time (i5, 3.2GHz): 1970s (33min), 1310s (22min)-> 1.09s, 0.72s per frame
+ 	-draft mark detection + recognition: 70.5%, 77%
+	-the first video has bigger draft marks in pixels and has more noisy edges
+-also even heavy in rain
+-depends on
+	-computing dilatation of image
+	-computing erosion of image
+	-computing openning of image
+	-computing closing of image
+	-computing canny edge detection (we can experiment with different algorithms for detecting edges)

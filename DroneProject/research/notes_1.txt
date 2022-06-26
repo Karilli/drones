@@ -1,0 +1,35 @@
+Alternative methods:
+-Otsu’s binarization and morphological operations for the detection of draft marks
+-the Canny edge for the waterline detection
+-FCN, DeepLab Family for semantic segmentation
+
+
+Paper aproach:
+1. mask R-CNN is used to segment the area of draft marks (semantic segmentation)
+	-bad for detecting waterline due to high water feature variation
+2. morphological operations - find waterline (divide image into 2 regions)
+	-UNet: highly used for two class image segmentation
+	-used on smaller rectangle, not the whole picture
+3. MSER features - text detection
+	-preprocessing: split horizontal and vertical text with average width of the mask from mask R-CNN
+	-make vertical part thin, calculate quadratic polynomial of it and find intersection with waterline
+	-structure analysis after tresholding -> calculate the bottom of each box and the distances between them
+4. ResNet - recognize draft numbers from text
+5. dataset:
+	-small size, 514 images
+	-trainig:validation = 80:20
+	-all images were cropped to center the marks and square the image
+-performs similar to human accuracy, mark detection 93%, draft calculation 98.5%
+-pretrained weights on MS COCO (mask R-CNN) and ImageNet (UNet, ResNet)
+-average time for inference is 0.36s per image on PC with 32GB RAM and single NVIDIA GTX 1080Ti GPU
+
+
+
+
+
+
+
+
+
+
+
