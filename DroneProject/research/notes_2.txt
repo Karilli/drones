@@ -23,7 +23,7 @@ paper approach:
 	-remove noise segments
 		-for each bounding box compute it's area (s) and width to height ration (w/h)
 		-assert that T_1 <= w/h <= T_2 and T_3 <= s; T_1 = 0.1, T_2 = 1, T_3 = 10
-2.draft mark recongnition
+2.draft mark recognition
 	-distinguish mark string vs single mark
 		-vertical distances from centres of marks in string is less than the quarter of their mean height
 		-horizontal distances from centres of marks in string is less than twice as long as their mean height
@@ -32,11 +32,10 @@ paper approach:
 		-compute sum of square differences of found marks with templates
 		-we don't have to do it for every found mark
 	-assert
-		-ratio of draft marks above each other is in [0.8, 1.2]
+		-height ratio of draft marks above each other is in [0.8, 1.2]
 		-vertical distance between the centers of draft marks above each other is in [1.5, 2.5]x(height of the above mark)
 		-results of template matching satisfy the positional relation of draft marks (M/0 -> 8 -> 6 -> 4 -> 2 -> M/0)
-		-number of found marks corresponds to parameter p (or is bigger)
-		-every mark matches some mask with error less than E, don't know how what number it should be
+		-every mark matches some mask with error less than E
 3.waterline extraction
 	-canny edge detection (high sensitivity and signal-to-noise ratio)
 	-remove stationary edges from the resulting image

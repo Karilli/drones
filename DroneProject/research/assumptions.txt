@@ -1,0 +1,25 @@
+- marks are made with one stroke and not damaged
+    - we can try to find damaged mark by template matching over estimated area (resize template in loop)
+    - we can try to find damaged mark by merging some marks in the estimated area
+- marks are drawed on contrasting background
+    - red marks on black background could be problem
+    -> we can make a preprocessing step to turn "dark red" to "lighter red" or something that will be contrasting to white and black
+- "mark string" consits of exactly two marks
+- mark label is digit "0" - "9" or capital "M"
+
+- drone position will assert:
+    - marks of the same digit have similar w/h ratio
+        - min and max values will be computed from db
+    - marks of the same digit have similar area
+        - min and max values will be computed from db
+    - marks are captured from similar angle
+        - needed for OCR - template matching
+    - marks are close to the middle (horizontaly)
+        - we can trim sides of the picture to remove noise
+    - waterlevel is in the same area on the picture 
+        - in case of high waves at least for some time it will be
+        - What is the highest waterlevel_delta in case of really high waves?
+
+- same ships stop at the port where the drone will be operating
+    - we can do adaptive learning to get better results overtime (especially OCR - template matching)
+    - we can have parameter for adaptivity
