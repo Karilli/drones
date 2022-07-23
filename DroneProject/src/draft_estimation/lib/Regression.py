@@ -4,7 +4,7 @@ from sklearn import linear_model
 
 
 def fit_and_predict_LMedS(x, y, line):
-    pass # TODO
+    pass # TODO: not implemented
 
 
 def fit_LMS(xs, ys):

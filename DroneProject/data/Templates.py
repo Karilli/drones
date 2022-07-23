@@ -7,15 +7,11 @@ sys.path.insert(1, os.path.abspath("..\\DroneProject"))##
 
 import cv2
 import numpy as np
+
 from pickle import loads, dumps
 from data.DBManager import DataBase, DBType
 
-
-def resize_to_full_screen(img):
-    max_h, max_w = 200, 400
-    h, w = img.shape[:2]
-    factor = min(max_h / h, max_w / w)
-    return cv2.resize(img, (0, 0), fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
+from src.draft_estimation.lib.ImageUtils import resize_to_full_screen
 
 
 def make_templates(template_path):
@@ -96,7 +92,6 @@ def show_templates(template_path):
         templates = loads(file.read())
 
     for char, img in templates.items():
-        print(img.shape)
         cv2.imshow(char, resize_to_full_screen(img))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -109,4 +104,4 @@ def main(template_path):
 
 
 if __name__ == '__main__':
-    main("..\\DroneProject\\data\\mark_templates")
+    main("..\\DroneProject\\data\\templates\\handmade")

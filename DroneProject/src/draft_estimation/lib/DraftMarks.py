@@ -2,18 +2,7 @@ import cv2
 import numpy as np
 
 from src.draft_estimation.lib.Colors import Color
-
-
-def join_rects(rect_1, rect_2):
-    x1, y1, w1, h1 = rect_1
-    x2, y2, w2, h2 = rect_2
-    x3, y3 = x1 + w1, y1 + h1
-    x4, y4 = x2 + w2, y2 + h2
-    x = min(x1, x2)
-    y = min(y1, y2)
-    w = max(x3, x4) - x
-    h = max(y3, y4) - y
-    return x, y, w, h
+from src.draft_estimation.lib.Grid2DMath import join
 
 
 class DraftMark:
@@ -24,7 +13,7 @@ class DraftMark:
         self.label = None
         self.conf = None
         self.materialized = None
-        self.mark_string = None
+        self.string = None
 
     def materialize(self):
         if self.materialized is None:
@@ -37,21 +26,23 @@ class DraftMark:
         return x + w // 2, y - h // 2
 
     def join_with(self, other):
-        if self.mark_string and other.mark_string:
-            for mark in other.mark_string.marks:
-                self.mark_string.add(mark)
-        elif self.mark_string:
-            self.mark_string.add(other)
-        elif other.mark_string:
-            other.mark_string.add(self)
-            self.mark_string = other.mark_string
+        if self.string and other.string:
+            if self.string is other.string:
+                return self
+            for mark in other.string.marks:
+                self.string.add(mark)
+        elif self.string:
+            self.string.add(other)
+        elif other.string:
+            other.string.add(self)
+            self.string = other.string
         else:
             DraftMarkString(self, other)
         return self
 
     def draw(self, img):
-        if self.mark_string:
-            self.mark_string.draw(img)
+        if self.string:
+            self.string.draw(img)
             return
         
         x, y, w, h = self.rect
@@ -60,13 +51,23 @@ class DraftMark:
         if self.label and self.conf:
             cv2.putText(img, str((self.label, round(self.conf, 2))), (x+w, y+h), cv2.FONT_HERSHEY_SIMPLEX, 0.4, col, 1, cv2.LINE_AA)
         return self
+    
+    def __repr__(self):
+        return f"{self.label}"
+    
+    def __hash__(self):
+        return hash(self.rect)
+    
+    def __eq__(self, other):
+        return self.rect == other.rect
+    
 
 
 class DraftMarkString:
     def __init__(self, m1, m2):
         self.marks = [m1, m2]
-        m1.mark_string = self
-        m2.mark_string = self
+        m1.string = self
+        m2.string = self
         self.materialized = None
         self.label = self.comp_label()
         self.conf = self.comp_conf()
@@ -80,13 +81,13 @@ class DraftMarkString:
     def comp_conf(self):
         if any(mark.conf is None for mark in self.marks):
             return None
-        # TODO: fine-tune, mean or max?
+        # TODO: fine-tune mean or max?
         return max(mark.conf for mark in self.marks)
 
     def comp_rect(self):
         rect = self.marks[0].rect
         for i in range(1, len(self.marks)):
-            rect = join_rects(rect, self.marks[i].rect)
+            rect = join(rect, self.marks[i].rect)
         return rect
 
     def draw(self, img):
@@ -98,7 +99,7 @@ class DraftMarkString:
     
     def add(self, other):
         self.marks.append(other)
-        other.mark_string = self
+        other.string = self
         self.label = self.comp_label()
         self.conf = self.comp_conf()
         self.rect = self.comp_rect()
@@ -111,3 +112,16 @@ class DraftMarkString:
             x, y, w, h = x2-x1, y2-y1, w2, h2
             self.materialized[y:y+h, x:x+w] = mark.materialize() 
         return self.materialized
+
+    def center(self):
+        x, y, w, h = self.rect
+        return x + w // 2, y - h // 2
+
+    def __repr__(self):
+        return f"{self.label}"
+    
+    def __hash__(self):
+        return hash(self.rect)
+    
+    def __eq__(self, other):
+        return self.rect == other.rect

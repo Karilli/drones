@@ -2,21 +2,15 @@ import numpy as np
 import cv2
 
 from src.draft_estimation.lib.Colors import Color
-
-
-def resize_to_full_screen(img):
-    max_h, max_w = 600, 1400
-    h, w = img.shape[:2]
-    factor = min(max_h / h, max_w / w)
-    return cv2.resize(img, (0, 0), fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
+from src.draft_estimation.lib.ImageUtils import resize_to_full_screen
 
 
 class Board:
     def __init__(self, img, rows, cols):
         self.rows = rows
         self.cols = cols
-        self.h, self.w, _ = img.shape
-        self.board = 255 * np.zeros((rows*(self.h+1)-1, cols*(self.w+1)-1, 3), dtype=np.uint8)
+        self.h, self.w = img.shape[:2]
+        self.board = np.zeros((rows*(self.h+1)-1, cols*(self.w+1)-1, 3), dtype=np.uint8)
 
         for y in range(1, rows+1):
             y = y*(self.h+1)-1

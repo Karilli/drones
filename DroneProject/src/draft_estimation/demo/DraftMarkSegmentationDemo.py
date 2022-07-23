@@ -1,8 +1,9 @@
-#########################################################
-import os                                              ##
-import sys                                             ##
-sys.path.insert(1, os.path.abspath("..\\DroneProject"))##
-#########################################################
+#############################################################
+if __name__ == "__main__":                                 ##
+    import os                                              ##
+    import sys                                             ##
+    sys.path.insert(1, os.path.abspath("..\\DroneProject"))##
+#############################################################
 
 import cv2
 import numpy as np
@@ -17,24 +18,24 @@ KEY_ARROW_DOWN = 2621440
 
 
 def choose_kernel_radius(img):
-    radius = 1
+    radius = 15
 
-    dm_seg = DraftMarkSegmentator(radius, True)
     cv2.namedWindow("Choose kernel radius.")
     board = Board(img, 3, 3)
     board.draw_img(img, 0, 0)
-
-    h, w, _ = img.shape
+    h, w = img.shape[:2]
 
     def draw():
-        nonlocal board, radius, dm_seg, w, h
+        nonlocal board, radius, w, h
 
-        dm_seg.kernel_radius = radius
-        dm_seg.marks.clear()
-        dm_seg.run(img)
+        dm_seg = DraftMarkSegmentator(radius)
+        try:
+            dm_seg.run(img)
+        except ValueError:
+            pass
 
         kernel_img = np.zeros((h, w), dtype=np.uint8)
-        cv2.circle(kernel_img, (w//2, h//2), dm_seg.kernel_radius, Color.WHITE.value, -1)
+        cv2.circle(kernel_img, (w//2, h//2), dm_seg.kernel_radius//2, Color.WHITE.value, -1)
         cv2.putText(kernel_img, "radius = " + str(radius), (w//2, h//2 - radius - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, Color.WHITE.value, 1, cv2.LINE_AA)
 
         board.draw_img(dm_seg.color_corrected, 0, 1)
@@ -71,4 +72,4 @@ def main(img_path):
 
 
 if __name__ == '__main__':
-    main("..\\DroneProject\\data\\images\\04.png")
+    main("..\\DroneProject\\data\\images\\01.png")

@@ -1,15 +1,14 @@
-#########################################################
-import os                                              ##
-import sys                                             ##
-sys.path.insert(1, os.path.abspath("..\\DroneProject"))##
-#########################################################
+#############################################################
+if __name__ == "__main__":                                 ##
+    import os                                              ##
+    import sys                                             ##
+    sys.path.insert(1, os.path.abspath("..\\DroneProject"))##
+#############################################################
 
 import cv2
 import numpy as np
 
-from src.draft_estimation.lib.DraftMarks import join_rects
-from src.draft_estimation.DraftCalculation import distance
-from src.draft_estimation.DraftMarkRecognition import are_overlapping, area_of_overlap
+from src.draft_estimation.lib.Grid2DMath import are_overlapping, overlap_area, join, distance
 
 
 def test_distance():
@@ -19,7 +18,7 @@ def test_distance():
 
 
 def show(rects):
-    img = np.zeros((100, 100), dtype=np.uint8)
+    img = np.zeros((500, 500), dtype=np.uint8)
     for rect in rects:
         x, y, w, h = rect
         cv2.rectangle(img, (x, y), (x+w, y+h), 255, 1)
@@ -40,23 +39,38 @@ PAIR_10 = ((30, 30, 10, 50), (20, 20, 30, 50)), (20, 20, 30, 60), 400
 PAIR_11 = ((30, 40, 50, 10), (10, 30, 50, 50)), (10, 30, 70, 50), 300
 PAIR_12 = ((30, 30, 30, 40), (10, 60, 70, 30)), (10, 30, 70, 60), 300
 PAIR_13 = ((10, 20, 40, 30), (30, 10, 50, 60)), (10, 10, 70, 60), 600
+PAIR_14 = ((206, 25, 72, 79), (229, 41, 31, 49)), (206, 25, 72, 79), 1519
+PAIR_15 = ((325, 150, 65, 60), (368, 191, -31, -26)), (325, 150, 65, 60), 806
 
 
-OVERLAPPING_PAIRS = [PAIR_1, PAIR_2, PAIR_3, PAIR_4, PAIR_5, PAIR_6, PAIR_7, PAIR_8, PAIR_9, PAIR_10, PAIR_11, PAIR_12, PAIR_13]
+OVERLAPPING_PAIRS = [
+    PAIR_1, PAIR_2, PAIR_3, PAIR_4, PAIR_5, 
+    PAIR_6, PAIR_7, PAIR_8, PAIR_9, PAIR_10, 
+    PAIR_11, PAIR_12, PAIR_13, PAIR_14, PAIR_15
+]
 
 
 PAIR_21 = ((20, 10, 40, 20), (30, 50, 20, 30)), (20, 10, 40, 70), 0
 PAIR_22 = ((5, 15, 45, 35), (70, 70, 25, 10)), (5, 15, 90, 65), 0
 PAIR_23 = ((25, 30, 35, 40), (70, 45, 20, 15)), (25, 30, 65, 40), 0
 PAIR_24 = ((55, 30, 35, 10), (15, 50, 25, 40)), (15, 30, 75, 60), 0
+PAIR_25 = ((206, 25, 72, 79), (225, 205, 26, 19)), (206, 25, 72, 199), 0
+PAIR_26 = ((206, 25, 72, 79), (243, 139, 31, 36)), (206, 25, 72, 150), 0
+PAIR_27 = ((206, 25, 72, 79), (210, 139, 29, 35)), (206, 25, 72, 149), 0
+PAIR_28 = ((325, 150, 65, 60), (396, 133, -27, -37)), (325, 96, 71, 114), 0
+PAIR_29 = ((368, 191, -31, -26), (229, 41, 31, 49)), (229, 41, 139, 150), 0
+PAIR_30 = ((368, 191, -31, -26), (119, 65, 21, 22)), (119, 65, 249, 126), 0
 
 
-NONOVERLAPPING_PAIRS = [PAIR_21, PAIR_22, PAIR_23, PAIR_24]
+NONOVERLAPPING_PAIRS = [
+    PAIR_21, PAIR_22, PAIR_23, PAIR_24, PAIR_25, 
+    PAIR_26, PAIR_27, PAIR_28, PAIR_29, PAIR_30
+]
 
 
-def test_join_rects():
+def test_join():
     for pair, joined, _ in OVERLAPPING_PAIRS + NONOVERLAPPING_PAIRS:
-        assert join_rects(*pair) == joined, f"joined {pair} != {joined} instead got {join_rects(*pair)}"
+        assert join(*pair) == joined, f"joined {pair} != {joined} instead got {join(*pair)}"
 
 
 def test_are_overlapping():
@@ -66,19 +80,18 @@ def test_are_overlapping():
         assert not are_overlapping(*pair), f"{pair} evaluated as overlapping instead of non-overlapping"
 
 
-def test_area_of_overlap():
+def test_overlap_area():
     for pair, _, area in OVERLAPPING_PAIRS + NONOVERLAPPING_PAIRS:
-        assert area_of_overlap(*pair) == area, f"area of overlap of {pair} != {area} instead got {area_of_overlap(*pair)}"
+        assert overlap_area(*pair) == area, f"area of overlap of {pair} != {area} instead got {overlap_area(*pair)}"
 
 
 def main():
-    test_join_rects()
+    test_join()
     test_distance()
     test_are_overlapping()
-    test_area_of_overlap()
+    test_overlap_area()
     print("Test succesfully completed")
 
 
 if __name__ == "__main__":
     main()
-   

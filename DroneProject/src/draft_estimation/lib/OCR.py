@@ -3,11 +3,12 @@ import pytesseract
 import numpy as np
 
 from src.draft_estimation.lib.DraftMarks import DraftMarkString
+from src.draft_estimation.lib.ImageUtils import normalize_img_0_1, normalize_img_0_255
 from pickle import loads, dumps
 
 
 def eval_char_tess(char_img, alphabet):
-    h, w = char_img.shape
+    h, w = char_img.shape[:2]
     w_offset, h_offset = 1, 1
     img = 255 * np.ones((h+2*h_offset, w+2*w_offset), dtype=np.uint8)
     img[h_offset:h+h_offset, w_offset:w+w_offset] = cv2.bitwise_not(char_img)
@@ -24,15 +25,7 @@ def eval_char_human(char_img, alphabet):
     cv2.destroyAllWindows()
     if value in alphabet:
         return value, 1
-    return "", -1
-
-
-def normalize_img_0_1(img):
-    return (img - np.min(img)) / np.ptp(img)
-
-
-def normalize_img_0_255(img):
-    return (255*(normalize_img_0_1(img))).astype(np.uint8)   
+    return "", -1  
 
 
 class TemplateOCR:
@@ -57,7 +50,7 @@ class TemplateOCR:
         res_label, res_conf = "", -10
         for c in alphabet:
             template = self.templates[c]
-            h, w = template.shape
+            h, w = template.shape[:2]
             char_img = cv2.resize(char_img, (w, h), interpolation=cv2.INTER_AREA)
             conf = cv2.matchTemplate(char_img, template, cv2.TM_CCOEFF_NORMED)[0][0]
             if not res_conf or conf > res_conf:
