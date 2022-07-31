@@ -6,9 +6,8 @@ if __name__ == "__main__":                                 ##
 #############################################################
 
 
-import cv2
-
 from src.draft_estimation.lib.Board import Board
+from src.draft_estimation.lib.ImageUtils import read
 from DraftMarkSegmentationDemo import choose_kernel_radius
 
 from src.draft_estimation.DraftMarkRecognition import DraftMarkRecognizer
@@ -16,7 +15,7 @@ from src.draft_estimation.DraftMarkSegmentation import DraftMarkSegmentator
 
 
 def main(img_path):
-    org = cv2.imread(img_path)
+    org = read(img_path)
 
     board = Board(org, 3, 3)
     board.draw_img(org, 0, 0)
@@ -51,3 +50,4 @@ def main(img_path):
 
 if __name__ == '__main__':
     main("..\\DroneProject\\data\\images\\01.png")
+

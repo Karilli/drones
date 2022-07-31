@@ -6,12 +6,13 @@ if __name__ == "__main__":                                 ##
 #############################################################
 
 import cv2
+import numpy as np
 
 from src.draft_estimation.lib.Board import Board
 from src.draft_estimation.lib.DraftMarks import DraftMark
 from src.draft_estimation.WaterLineDetection import WaterLineDetector
 from src.draft_estimation.lib.Colors import Color
-from src.draft_estimation.lib.ImageUtils import overlap_imgs
+from src.draft_estimation.lib.ImageUtils import overlap_imgs, read
 
 
 def get_rect(img):
@@ -41,7 +42,7 @@ def get_rect(img):
 
 
 def main(img_path):
-    img = cv2.imread(img_path)
+    img = read(img_path)
     board = Board(img, 2, 2)
     board.draw_img(img, 0, 0)
 
@@ -53,14 +54,23 @@ def main(img_path):
     board.draw_img(det.canny, 0, 1)
     board.draw_img(det.open_canny, 1, 0)
 
-    overlap_imgs(img, [det.rect1, det.rect2], det.open_canny)
+    overlap_imgs(img, [det.rect1, det.rect2], cv2.cvtColor(det.open_canny, cv2.COLOR_GRAY2BGR))
     cv2.line(img, (X, Y), (x + w//2, y+h), Color.YELLOW.value, 2, cv2.LINE_AA)
-    cv2.line(img, det.line[0], det.line[1], Color.BLUE.value, 1, cv2.LINE_AA)
     cv2.rectangle(img, (x, y), (x+w, y+h), Color.GREEN.value, 1)
+    h, w = img.shape[:2]
+    x = np.arange(0, w-1, 0.001)
+    f = det.water_line(x).astype(int)
+    g = det.mark_curve(x).astype(int)
+    for x, y1, y2 in zip(x.astype(int), g, f):
+        if 0 <= x < w:
+            if 0 <= y1 < h:
+                img[y1, x] = Color.YELLOW.value
+            if 0 <= y2 < h:
+                img[y2, x] = Color.YELLOW.value
     board.draw_img(img, 1, 1)
 
     board.show()
 
 
 if __name__ == '__main__':
-    main("..\\DroneProject\\data\\images\\01.png")
+    main("..\\DroneProject\\data\\images\\02.png")

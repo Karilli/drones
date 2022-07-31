@@ -9,14 +9,13 @@ import cv2
 import numpy as np
 
 from pickle import loads, dumps
-from data.DBManager import DataBase, DBType
+from data.DBManager import DataBase
 
 from src.draft_estimation.lib.ImageUtils import resize_to_full_screen
 
 
 def make_templates(template_path):
     res = {}
-    alphabet = "0123456789M"
     db = DataBase(DBType.MARK)
     for char in alphabet:
         h = np.median(list(map(lambda x: x[1].shape[0], filter(lambda x: char == x[0].upper(), db.db.values()))))
@@ -99,7 +98,7 @@ def show_templates(template_path):
 
 def main(template_path):
     #make_templates(template_path)
-    #edit_templates(template_path)
+    edit_templates(template_path)
     show_templates(template_path)
 
 

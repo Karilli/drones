@@ -2,9 +2,11 @@ import cv2
 import pytesseract
 import numpy as np
 
+from pickle import loads, dumps
+
 from src.draft_estimation.lib.DraftMarks import DraftMarkString
 from src.draft_estimation.lib.ImageUtils import normalize_img_0_1, normalize_img_0_255
-from pickle import loads, dumps
+from src.draft_estimation.Constants import TEMPLATE_ADAPTIVITY
 
 
 def eval_char_tess(char_img, alphabet):
@@ -30,9 +32,7 @@ def eval_char_human(char_img, alphabet):
 
 class TemplateOCR:
     def __init__(self, filename):
-        # TODO: fine-tune
         self.filename = filename
-        self.adaptivity = 100
         self.templates = None
         self.load()
 
@@ -47,7 +47,7 @@ class TemplateOCR:
         return self
 
     def eval_char(self, char_img, alphabet):
-        res_label, res_conf = "", -10
+        res_label, res_conf = "", -1
         for c in alphabet:
             template = self.templates[c]
             h, w = template.shape[:2]
@@ -61,7 +61,7 @@ class TemplateOCR:
         template = self.templates[mark.label]
         h, w = template.shape[:2]
         char_img = cv2.resize(mark.materialize(), (w, h), interpolation=cv2.INTER_AREA)
-        self.templates[mark.label] = normalize_img_0_255(normalize_img_0_1(template) + (normalize_img_0_1(char_img) / self.adaptivity))
+        self.templates[mark.label] = normalize_img_0_255(normalize_img_0_1(template) + (normalize_img_0_1(char_img) / TEMPLATE_ADAPTIVITY))
 
     def train(self, marks):
         for mark in marks:

@@ -3,14 +3,13 @@ import cv2
 from src.draft_estimation.lib.Colors import Color
 from src.draft_estimation.lib.DraftMarks import DraftMark
 from src.draft_estimation.lib.DraftMarkSet import DraftMarkSet
+from src.draft_estimation.Constants import MARK_MAX_W_TO_H_RATIO, MARK_MIN_W_TO_H_RATIO, MARK_MIN_AREA, MARK_MAX_AREA
 
 
 class DraftMarkSegmentator:  # :-D
     def __init__(self, kernel_radius):
         self.marks = DraftMarkSet()
         self.kernel_radius = kernel_radius
-        self.w_to_h_ratio_range = (0.1, 2)
-        self.area_range = (50, 2000)
 
         # for debbuging and demos
         self.color_corrected = None
@@ -22,6 +21,7 @@ class DraftMarkSegmentator:  # :-D
     def search_marks(self, img):
         # TODO: crop the img
         # TODO: black on red marks problem
+        
         # mask = cv2.inRange(img, (0, 0, 50), (15, 15, 255))
         # img_diff = img.max(axis=2) - img.min(axis=2)
         self.color_corrected = img.copy()
@@ -41,29 +41,19 @@ class DraftMarkSegmentator:  # :-D
 
         self.marks.add_from({DraftMark(cv2.boundingRect(cntr), self.tophat_bin_img, True) for cntr in tophat_cntrs})
         self.marks.add_from({DraftMark(cv2.boundingRect(cntr), self.blackhat_bin_img, False) for cntr in blackhat_cntrs})
-
         return self
 
-    def w_to_h_ratio_filter(self):
-        # TODO: fine-tune params and make them adaptive
-        mn, mx = self.w_to_h_ratio_range
-        for mark in self.marks.copy():
+    def filter(self):
+        for mark in self.marks.marks.copy():
             _, _, w, h = mark.rect
-            if not (mn < w/h < mx):
+            if not (MARK_MIN_W_TO_H_RATIO < w/h < MARK_MAX_W_TO_H_RATIO):
                 self.marks.remove(mark)
-        return self
-
-    def area_filter(self):
-        # TODO: fine-tune params and make them adaptive
-        mn, mx = self.area_range
-        for mark in self.marks.copy():
-            _, _, w, h = mark.rect
-            if not (mn < w*h < mx):
+            elif not (MARK_MIN_AREA < w*h < MARK_MAX_AREA):
                 self.marks.remove(mark)
         return self
 
     def run(self, org_img):
-        self.search_marks(org_img).w_to_h_ratio_filter().area_filter()
+        self.search_marks(org_img).filter()
         if not self.marks:
             raise ValueError("Segmentation fault")
         return self.marks

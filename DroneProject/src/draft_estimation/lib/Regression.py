@@ -1,6 +1,7 @@
 import numpy as np
 
 from sklearn import linear_model
+from scipy.optimize import curve_fit
 
 
 def fit_and_predict_LMedS(x, y, line):
@@ -38,3 +39,16 @@ def predict_RANSAC(regressor, xs):
 
 def fit_and_predict_RANSAC(xs, ys, line):
     return predict_RANSAC(fit_RANSAC(xs, ys), line)
+
+
+def fit_polynom(polynom, xs, ys):
+    args, _ = curve_fit(polynom, xs, ys)
+    return lambda x: polynom(x, *args)
+
+
+def predict_polynom(polynom, line):
+    return polynom(line)
+
+
+def fit_and_predict_polynom(polynom, xs, ys, line):
+    return predict_polynom(fit_polynom(polynom, xs, ys), line)

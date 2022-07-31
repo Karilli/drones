@@ -17,10 +17,10 @@ from time import perf_counter
 
 from src.draft_estimation.DraftMarkSegmentation import DraftMarkSegmentator
 from src.draft_estimation.demo.DraftMarkSegmentationDemo import choose_kernel_radius
-from src.draft_estimation.lib.ImageUtils import resize_to_full_screen
+from src.draft_estimation.lib.ImageUtils import resize_to_full_screen, read
 from src.draft_estimation.lib.Colors import Color
 from src.draft_estimation.lib.Grid2DMath import overlap_area_percentage, join
-
+from src.draft_estimation.Constants import DEFAULT_P
 
 PATH = str
 ID = int  # 0 for image, 1..n for sequence
@@ -40,10 +40,12 @@ SPACE = 32
 ERROR = -1
 
 
+# TODO: refactor to store optimal P (kernel_radius for segmentation)
 class DataBase:
     def __init__(self, filename):
         self.filename = filename
-        self.db: dict[IMG_ID, tuple[set[MARK], set[STRING], P]] = defaultdict(lambda: (set(), set()))
+        self.db: dict[IMG_ID, tuple[set[MARK], set[STRING]]] = defaultdict(lambda: (set(), set()))
+        self.p: dict[IMG_ID, P] = defaultdict(lambda: DEFAULT_P)
         self.load()
 
     def load(self):
@@ -96,8 +98,8 @@ class DataBase:
 
     # TODO: make window with image paths
     def show(self):
-        for (img_path, id), (marks, strings, p) in self.db.items():
-            img = cv2.imread(img_path)
+        for (img_path, id), (marks, strings) in self.db.items():
+            img = read(img_path)
             if self.update_img(img_path) == ESC:
                 return
         self.store()
@@ -109,8 +111,9 @@ class DataBase:
     # TODO: resize to full screen
     def update_img(self, img_path):
         marks, strings = self.db[(img_path, 0)]
+        kernel_radius = self.p[(img_path, 0)]
         button_down_delta, x1, y1 = 0, None, None
-        org = cv2.imread(img_path)
+        org = read(img_path)
 
         def marks_at_pt(x, y):
             return marks_in_area((x, y, 0, 0))
@@ -185,7 +188,6 @@ class DataBase:
                         add_mark((rect, None, tophat_flag))
                 button_down_delta = 0
 
-        kernel_radius = 15
         dm_seg = DraftMarkSegmentator(kernel_radius).search_marks(org)
         win_name = "Select marks."
         cv2.namedWindow(win_name)
@@ -198,10 +200,11 @@ class DataBase:
                 return ESC
             elif code == ENTER:
                 self.db[(img_path, 0)] = (marks, strings)
+                self.p[(img_path, 0)] = kernel_radius
                 self.store()
                 return ENTER
             elif code != ERROR and chr(code).lower() == "p":
-                kernel_radius = choose_kernel_radius(org)
+                kernel_radius = choose_kernel_radius(org, kernel_radius)
                 dm_seg = DraftMarkSegmentator(kernel_radius).search_marks(org)
                 cv2.destroyAllWindows()
                 cv2.namedWindow(win_name)

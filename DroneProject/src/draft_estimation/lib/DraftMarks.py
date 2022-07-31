@@ -44,23 +44,30 @@ class DraftMark:
         if self.string:
             self.string.draw(img)
             return
-        
+
         x, y, w, h = self.rect
         col = Color.GREEN.value if self.tophat_flag else Color.RED.value
         cv2.rectangle(img, (x, y), (x+w, y+h), col, 1)
         if self.label and self.conf:
             cv2.putText(img, str((self.label, round(self.conf, 2))), (x+w, y+h), cv2.FONT_HERSHEY_SIMPLEX, 0.4, col, 1, cv2.LINE_AA)
         return self
-    
+
     def __repr__(self):
         return f"{self.label}"
-    
+
     def __hash__(self):
         return hash(self.rect)
-    
+
     def __eq__(self, other):
         return self.rect == other.rect
     
+    def bottom(self):
+        x, y, w, h = self.rect
+        return (x+w//2, y+h-1)
+    
+    def top(self):
+        x, y, w, h = self.rect
+        return (x+w//2, y+1)
 
 
 class DraftMarkString:
@@ -96,7 +103,7 @@ class DraftMarkString:
         if self.label and self.conf:
             cv2.putText(img, str((self.label, round(self.conf, 2))), (x+w, y+h), cv2.FONT_HERSHEY_SIMPLEX, 0.4, Color.BLUE.value, 1, cv2.LINE_AA)
         return self
-    
+
     def add(self, other):
         self.marks.append(other)
         other.string = self
@@ -122,6 +129,14 @@ class DraftMarkString:
     
     def __hash__(self):
         return hash(self.rect)
-    
+
     def __eq__(self, other):
         return self.rect == other.rect
+    
+    def bottom(self):
+        x, y, w, h = self.rect
+        return (x+w//2, y+h-1)
+    
+    def top(self):
+        x, y, w, h = self.rect
+        return (x+w//2, y+1)

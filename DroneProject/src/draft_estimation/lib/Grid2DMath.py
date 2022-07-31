@@ -7,6 +7,18 @@ def distance(pt1, pt2):
     return sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
 
+def distance_x(pt1, pt2):
+    x1, _ = pt1
+    x2, _ = pt2
+    return abs(x1 - x2)
+
+
+def distance_y(pt1, pt2):
+    _, y1 = pt1
+    _, y2 = pt2
+    return abs(y1 - y2)
+
+
 def top_left_pt(rect):
     x, y, w, h = rect
     if w < 0 and h < 0:

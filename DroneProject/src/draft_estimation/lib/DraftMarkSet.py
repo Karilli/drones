@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from src.draft_estimation.lib.DraftMarks import DraftMarkString
 from src.draft_estimation.lib.Grid2DMath import overlap_area_percentage, are_overlapping
 
@@ -84,11 +82,8 @@ class DraftMarkSet():
             if mark.tophat_flag == tophat_flag and are_overlapping(mark.rect, (x, y, 0, 0)):
                 return mark
 
-    def copy(self):
-        return deepcopy(self)
-    
     def __contains__(self, key):
         return key in self.marks or key in self.strings
-    
+
     def __iter__(self):
         return iter(self.marks_and_strings())

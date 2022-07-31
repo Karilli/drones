@@ -6,7 +6,8 @@ from src.draft_estimation.lib.ImageUtils import resize_to_full_screen
 
 
 class Board:
-    def __init__(self, img, rows, cols):
+    def __init__(self, img, rows, cols, name=""):
+        self.__name = name
         self.rows = rows
         self.cols = cols
         self.h, self.w = img.shape[:2]
@@ -56,6 +57,10 @@ class Board:
         return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
     def show(self):
-        cv2.imshow("", resize_to_full_screen(self.board))
+        cv2.imshow(self.__name, resize_to_full_screen(self.board))
         cv2.waitKey(0)
         return self
+
+    def name(self, name):
+        self.__name = name
+        cv2.namedWindow(self.__name)

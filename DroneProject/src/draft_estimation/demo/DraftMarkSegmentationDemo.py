@@ -9,20 +9,19 @@ import cv2
 import numpy as np
 
 from src.draft_estimation.lib.Board import Board
+from src.draft_estimation.lib.ImageUtils import read
 from src.draft_estimation.lib.Colors import Color
 from src.draft_estimation.DraftMarkSegmentation import DraftMarkSegmentator
-
+from src.draft_estimation.Constants import DEFAULT_P
 
 KEY_ARROW_UP = 2490368
 KEY_ARROW_DOWN = 2621440
 
 
-def choose_kernel_radius(img):
-    radius = 15
-
-    cv2.namedWindow("Choose kernel radius.")
+def choose_kernel_radius(img, radius=DEFAULT_P):
     board = Board(img, 3, 3)
     board.draw_img(img, 0, 0)
+    board.name("Choose kernel radius.")
     h, w = img.shape[:2]
 
     def draw():
@@ -47,11 +46,11 @@ def choose_kernel_radius(img):
         board.draw_marks(list(filter(lambda x: x.tophat_flag, dm_seg.marks)), 1, 2)
         board.draw_marks(list(filter(lambda x: not x.tophat_flag, dm_seg.marks)), 2, 2)
 
-        cv2.imshow("Choose kernel radius.", board.board)
+        board.show()
 
     draw()
     while True:
-        code = cv2.waitKeyEx(5)
+        code = cv2.waitKeyEx(1)
         if code == KEY_ARROW_UP:
             radius = min(radius + 1, h//4, w//4)
             draw()
@@ -67,7 +66,7 @@ def choose_kernel_radius(img):
 
 
 def main(img_path):
-    org = cv2.imread(img_path)
+    org = read(img_path)
     choose_kernel_radius(org)
 
 
